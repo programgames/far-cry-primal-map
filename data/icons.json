@@ -1,0 +1,311 @@
+{
+ "sprite": {
+  "url": "assets/game-markers.png",
+  "width": 512,
+  "height": 311,
+  "pixelRatio": 2
+ },
+ "icons": {
+  "bonfire": {
+   "x": 178,
+   "y": 74,
+   "width": 52,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "campfire": {
+   "x": 442,
+   "y": 144,
+   "width": 40,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "fort": {
+   "x": 232,
+   "y": 74,
+   "width": 52,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "landmark": {
+   "x": 392,
+   "y": 144,
+   "width": 48,
+   "height": 45,
+   "pixelRatio": 2
+  },
+  "lostcave": {
+   "x": 78,
+   "y": 144,
+   "width": 52,
+   "height": 50,
+   "pixelRatio": 2
+  },
+  "outpost": {
+   "x": 286,
+   "y": 74,
+   "width": 52,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "village": {
+   "x": 0,
+   "y": 0,
+   "width": 72,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "lume": {
+   "x": 0,
+   "y": 198,
+   "width": 44,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "treasuremap": {
+   "x": 46,
+   "y": 198,
+   "width": 44,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "iziliamask": {
+   "x": 92,
+   "y": 198,
+   "width": 44,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "relic": {
+   "x": 148,
+   "y": 244,
+   "width": 44,
+   "height": 37,
+   "pixelRatio": 2
+  },
+  "totem": {
+   "x": 138,
+   "y": 198,
+   "width": 26,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "cavepainting": {
+   "x": 166,
+   "y": 198,
+   "width": 38,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "hunting": {
+   "x": 340,
+   "y": 74,
+   "width": 50,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "helpingwinja": {
+   "x": 392,
+   "y": 74,
+   "width": 50,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "tribewar": {
+   "x": 132,
+   "y": 144,
+   "width": 52,
+   "height": 49,
+   "pixelRatio": 2
+  },
+  "villagequest": {
+   "x": 444,
+   "y": 74,
+   "width": 52,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "badger": {
+   "x": 350,
+   "y": 198,
+   "width": 68,
+   "height": 43,
+   "pixelRatio": 2
+  },
+  "bitefish": {
+   "x": 0,
+   "y": 285,
+   "width": 68,
+   "height": 26,
+   "pixelRatio": 2
+  },
+  "boar": {
+   "x": 420,
+   "y": 198,
+   "width": 68,
+   "height": 40,
+   "pixelRatio": 2
+  },
+  "brownbear": {
+   "x": 206,
+   "y": 198,
+   "width": 68,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "cavebear": {
+   "x": 276,
+   "y": 198,
+   "width": 72,
+   "height": 44,
+   "pixelRatio": 2
+  },
+  "cavelion": {
+   "x": 396,
+   "y": 244,
+   "width": 72,
+   "height": 34,
+   "pixelRatio": 2
+  },
+  "deer": {
+   "x": 58,
+   "y": 74,
+   "width": 52,
+   "height": 64,
+   "pixelRatio": 2
+  },
+  "dhole": {
+   "x": 112,
+   "y": 74,
+   "width": 64,
+   "height": 56,
+   "pixelRatio": 2
+  },
+  "eldermammoth": {
+   "x": 186,
+   "y": 144,
+   "width": 80,
+   "height": 49,
+   "pixelRatio": 2
+  },
+  "goat": {
+   "x": 268,
+   "y": 144,
+   "width": 64,
+   "height": 49,
+   "pixelRatio": 2
+  },
+  "jaguar": {
+   "x": 70,
+   "y": 285,
+   "width": 72,
+   "height": 25,
+   "pixelRatio": 2
+  },
+  "leopard": {
+   "x": 144,
+   "y": 285,
+   "width": 68,
+   "height": 23,
+   "pixelRatio": 2
+  },
+  "mammoth": {
+   "x": 0,
+   "y": 144,
+   "width": 76,
+   "height": 52,
+   "pixelRatio": 2
+  },
+  "monkey": {
+   "x": 334,
+   "y": 144,
+   "width": 56,
+   "height": 46,
+   "pixelRatio": 2
+  },
+  "sabretooth": {
+   "x": 0,
+   "y": 244,
+   "width": 72,
+   "height": 39,
+   "pixelRatio": 2
+  },
+  "elk": {
+   "x": 0,
+   "y": 74,
+   "width": 56,
+   "height": 68,
+   "pixelRatio": 2
+  },
+  "tapir": {
+   "x": 194,
+   "y": 244,
+   "width": 64,
+   "height": 37,
+   "pixelRatio": 2
+  },
+  "wolf": {
+   "x": 260,
+   "y": 244,
+   "width": 64,
+   "height": 37,
+   "pixelRatio": 2
+  },
+  "rhino": {
+   "x": 74,
+   "y": 244,
+   "width": 72,
+   "height": 38,
+   "pixelRatio": 2
+  },
+  "yak": {
+   "x": 326,
+   "y": 244,
+   "width": 68,
+   "height": 35,
+   "pixelRatio": 2
+  },
+  "hunt_sabretooth": {
+   "x": 74,
+   "y": 0,
+   "width": 70,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "hunt_mammoth": {
+   "x": 146,
+   "y": 0,
+   "width": 71,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "hunt_bear": {
+   "x": 219,
+   "y": 0,
+   "width": 70,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "hunt_wolf": {
+   "x": 291,
+   "y": 0,
+   "width": 70,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "fort_udam": {
+   "x": 363,
+   "y": 0,
+   "width": 70,
+   "height": 72,
+   "pixelRatio": 2
+  },
+  "fort_izila": {
+   "x": 435,
+   "y": 0,
+   "width": 70,
+   "height": 72,
+   "pixelRatio": 2
+  }
+ }
+}

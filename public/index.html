@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Far Cry Primal — Carte d'Oros (locale)</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e08a2e'/%3E%3Cpath d='M8 22l8-13 8 13z' fill='%2314100d'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="vendor/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside id="sidebar" class="sidebar">
+        <div class="side-head">
+          <div class="brand">
+            <span class="brand-glyph" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="28" height="28">
+                <path d="M16 3l11 25H5z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" />
+                <path d="M16 11v10M11 21h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <div class="brand-text">
+              <h1>Far Cry Primal</h1>
+              <p>Carte d'Oros · progression de la partie</p>
+            </div>
+          </div>
+          <button id="btn-collapse" class="icon-btn" title="Replier le panneau" aria-label="Replier le panneau">‹</button>
+        </div>
+
+        <div class="save-line" id="save-line">
+          <span class="save-dot" id="save-dot"></span>
+          <span id="save-text">Lecture de la sauvegarde du jeu…</span>
+          <button id="btn-refresh" class="icon-btn small" title="Relire la sauvegarde maintenant" aria-label="Relire la sauvegarde maintenant">⟳</button>
+          <button id="btn-pick" class="icon-btn small" title="Choisir le dossier des sauvegardes" aria-label="Choisir le dossier des sauvegardes">📁</button>
+        </div>
+        <div class="save-help hidden" id="save-help">
+          <p id="save-help-text"></p>
+          <div class="save-help-actions">
+            <button type="button" class="ghost" id="btn-pick-big">Choisir le dossier des sauvegardes</button>
+            <button type="button" class="ghost hidden" id="btn-auto">Recherche automatique</button>
+          </div>
+        </div>
+        <a class="update-banner hidden" id="update-banner" target="_blank" rel="noopener"></a>
+
+        <section class="progress-card">
+          <div class="progress-top">
+            <b>Progression du jeu</b>
+            <span id="progress-pct">– %</span>
+          </div>
+          <div class="bar"><i id="progress-bar" style="width: 0%"></i></div>
+          <p class="game-summary" id="game-summary"></p>
+        </section>
+
+        <div class="search-row">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2" />
+            <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input id="search" type="search" placeholder="Rechercher un lieu, une catégorie…" autocomplete="off" />
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="filters" role="tab">Filtres</button>
+          <button class="tab" data-tab="list" role="tab">Lieux <span id="list-count" class="tab-count"></span></button>
+          <button class="tab" data-tab="missions" role="tab">Missions <span id="missions-count" class="tab-count"></span></button>
+          <button class="tab" data-tab="crafting" role="tab">Compétences</button>
+        </div>
+
+        <div class="panel" id="panel-filters"></div>
+        <div class="panel hidden" id="panel-list"></div>
+        <div class="panel hidden" id="panel-missions"></div>
+        <div class="panel hidden" id="panel-crafting"></div>
+
+        <div class="side-foot">
+          <button id="btn-fit" class="ghost wide">Recentrer la carte</button>
+        </div>
+      </aside>
+
+      <div id="map" class="map"></div>
+
+      <button id="btn-open" class="fab" title="Afficher le panneau" aria-label="Afficher le panneau">
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="vendor/leaflet.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
