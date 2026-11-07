@@ -37,4 +37,4 @@ on GitHub.
 
 ## Still stuck?
 
-Open an [issue](https://github.com/programgames/oros-map/issues) with the text of the black window.
+Open an [issue](https://github.com/programgames/far-cry-primal-map/issues) with the text of the black window.

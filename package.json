@@ -3,7 +3,7 @@
   "version": "3.1.0",
   "private": true,
   "description": "Carte locale d'Oros (Far Cry Primal) qui affiche la progression lue dans la sauvegarde du jeu",
-  "repository": "programgames/oros-map",
+  "repository": "programgames/far-cry-primal-map",
   "license": "MIT",
   "engines": { "node": ">=22.2" },
   "scripts": {

@@ -3,7 +3,7 @@
 You need Windows 10 or 11 and Far Cry Primal (any PC version: Ubisoft Connect, Steam or Epic).
 Nothing else to install.
 
-1. Open the [latest release](https://github.com/programgames/oros-map/releases/latest).
+1. Open the [latest release](https://github.com/programgames/far-cry-primal-map/releases/latest).
 2. Under **Assets**, click **`OrosMap-x.y.z-windows.zip`** to download it (about 45 MB).
 3. Open your *Downloads* folder, right-click the zip file and choose **Extract All…**, then **Extract**.
    Keep all the files together: `OrosMap.exe` needs the `app` and `runtime` folders next to it.

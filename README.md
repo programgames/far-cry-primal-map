@@ -1,9 +1,12 @@
-# Oros Map — Far Cry Primal progress tracker
+# Far Cry Primal Interactive Map & 100% Completion Tracker
 
-A map of Oros that **reads your Far Cry Primal save file** and ticks off everything you have done:
-collectibles picked up, bonfires and outposts taken, caves and places discovered, missions
-completed, skills learned and crafting upgrades made. Nothing to tick by hand — keep the map open
-on a second screen and it updates every time the game saves.
+**Oros Map** is a free interactive map of Far Cry Primal that **reads your save file** and ticks off
+everything you have done: collectibles picked up, bonfires and outposts taken, caves and places
+discovered, missions completed, skills learned and crafting upgrades made. Nothing to tick by hand —
+keep the map open on a second screen and it updates every time the game saves. It is the quickest way
+to find the last Daysha hands, Wenja bracelets or Izila masks you need for 100%.
+
+![Far Cry Primal interactive map of Oros: done elements have a green tick, the side panel shows the game progress and the collectibles found](docs/images/screenshot.jpg)
 
 > Unofficial fan project, not affiliated with or endorsed by Ubisoft.
 > Far Cry Primal and all its content (map, texts, icons) are the property of Ubisoft Entertainment.
@@ -22,26 +25,66 @@ Full help: see the [wiki](../../wiki).
 
 ## What it shows
 
-- **Map**: the game's own world map, with all collectibles (Daysha hands, Wenja bracelets,
-  Izila masks, spirit totems, cave paintings, hunter caches), bonfires, outposts, forts, lost caves,
-  camp fires, named places, side missions, Beast Master hunts and animal areas — each at its exact
-  position from the game data.
-- **Your progress**: what is done is greyed out with a green tick. Option: *hide what is done*.
+- **Map**: the game's own world map of Oros, with every element at its exact position from the game
+  data (see the table below).
+- **Your progress**: what is done is greyed out with a green tick. Option: *hide what is done*, to see
+  only what is left.
 - **Fog of war**: option to darken the areas you have never explored (read from your save).
-- **Missions** tab: the 64 story and side missions, grouped by story line, with a button to show
-  the mission giver on the map.
+- **Missions** tab: the 64 story and side missions, grouped by story line (Sayla, Tensay, Wogah…),
+  with a button to show the mission giver on the map.
 - **Skills** tab: the 80 skills by skill tree, and the 55 crafting upgrades.
 - **Summary**: game progress (%) and play time, as the game reports them.
+- **Animal areas**: where to hunt the 20 animal species (mammoth, sabretooth tiger, cave bear, woolly
+  rhino, cave lion…).
+
+| Collectibles | Total | Locations | Total | Activities | Total |
+| --- | --: | --- | --: | --- | --: |
+| Daysha hands | 100 | Bonfires | 16 | Help Wenja | 35 |
+| Wenja bracelets | 25 | Outposts | 15 | Tribal clashes | 17 |
+| Izila masks | 25 | Forts | 2 | Village missions | 10 |
+| Wenja spirit totems | 12 | Lost caves | 22 | Beast Master hunts | 4 |
+| Cave paintings | 22 | Campfires | 70 | | |
+| Hunter caches | 16 | Landmarks | 66 | | |
 
 The interface is in English and French. It follows the language of your browser; the **English** /
 **Français** button at the bottom of the side panel changes it.
 
-## Your save file
+## FAQ
 
-The app finds your save automatically (Ubisoft Connect `savegames` folders on every drive; a save is
-recognised by its content, so the Ubisoft, Steam and Epic versions all work). If it cannot find it,
-click **📁** in the app and choose the folder. The save is only **read**, never modified, and nothing
-leaves your PC (the only network request is an optional check for a new version on GitHub).
+### Where is the Far Cry Primal save file?
+
+All PC versions (Ubisoft Connect, Steam, Epic) keep the save in the Ubisoft Connect folder, usually
+`C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames\<numbers>\2010\`. The last number can
+be different for the Steam and Epic versions. Oros Map finds the save by itself on every drive. If it
+cannot, click **📁** in the app and choose the folder.
+
+### How do I find the collectibles I am missing?
+
+Tick **Hide done elements**: the map then shows only what you have not found yet. The **Places** tab
+lists the elements still to do first; click one to go to it on the map.
+
+### What do I still need for 100%?
+
+The side panel shows the same progress % as the game menu, and a count per category (for example
+*Daysha Hand 27/100*). Hide the done elements to see what is left for each category.
+
+### Is it a save editor? Can it break my save?
+
+No. Oros Map is a save viewer: it only **reads** the save file and never changes it. Nothing leaves your
+PC (the only network request is an optional check for a new version on GitHub).
+
+### Does it work on PS4, Xbox or Steam Deck?
+
+No. The app needs the save file of the PC version, on Windows.
+
+## En français
+
+**Carte interactive de Far Cry Primal et suivi de la progression à 100 %.** Oros Map lit votre
+sauvegarde et coche tout ce que vous avez fait : mains daysha, bracelets wenja, masques izila,
+esprits-totems, peintures rupestres, caches de chasseur, bûchers, avant-postes, grottes perdues et
+missions. L'interface est en français si votre navigateur est en français. Téléchargez
+**`OrosMap-x.y.z-windows.zip`** dans la [dernière version](../../releases/latest), décompressez-le, puis
+double-cliquez sur **`OrosMap.exe`**.
 
 ## For developers
 
