@@ -13,7 +13,7 @@ most recent one and recognises a save by the map name `primal_main` in its heade
   written (target = position after the `0xFE` byte − offset).
 - Names are CRC32 hashes of property names (most resolved with FCBConverter's string list).
 
-Parser: [`lib/save.js`](../lib/save.js).
+Parser: [`public/savefile.js`](../public/savefile.js).
 
 ## What is used
 

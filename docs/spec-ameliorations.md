@@ -137,7 +137,7 @@ Chaque point commence par une étude limitée. L'étude se termine par une déci
 - **Résultat de l'étude (2026-11-06) : oui, implémenté.**
   - `FogData.Data` est un flux **LZO1X** (sa taille varie avec l'exploration : 2 902, puis 3 014 octets). Décompressé, il donne 131 072 octets : une grille de **1024 × 1024 bits** (1 = exploré ; ligne 0 au nord ; bit de poids faible = case la plus à l'ouest).
   - Calage : la grille couvre le monde de −5 000 à +5 000 m (cases de 9,77 m). 98,8 % des lieux découverts de la sauvegarde tombent dans une case explorée ; à l'écran, toutes les coches vertes sont dans la zone claire.
-  - Code : `lib/lzo.js` (décodeur), `lib/save.js` (`fogBitmap`), route `/api/fog`, bords dans `game-index.json` (`fog`), interrupteur « Assombrir les zones inexplorées ».
+  - Code : `public/savefile.js` (décodeur, `fogBitmap`), route `/api/fog`, bords dans `game-index.json` (`fog`), interrupteur « Assombrir les zones inexplorées ».
 
 ### 11. Compétences et artisanat
 

@@ -41,7 +41,8 @@
   })();
   const EN = {
     // index.html
-    "Far Cry Primal — Carte d'Oros (locale)": "Far Cry Primal — Oros Map (local)",
+    "Carte interactive de Far Cry Primal et suivi de la progression à 100 % — Oros Map":
+      "Far Cry Primal Interactive Map & 100% Completion Tracker — Oros Map",
     "Carte d'Oros · progression de la partie": "Oros map · game progress",
     "Replier le panneau": "Collapse the panel",
     "Afficher le panneau": "Show the panel",
@@ -56,7 +57,7 @@
     Missions: "Missions",
     Compétences: "Skills",
     "Recentrer la carte": "Recenter the map",
-    // états lus dans la sauvegarde (lib/save.js) et état visé
+    // états lus dans la sauvegarde (public/savefile.js) et état visé
     ramassé: "collected",
     terminée: "completed",
     débloqué: "unlocked",
@@ -115,6 +116,14 @@
     "Sauvegarde du {0}": "Save of {0}",
     "Nouvelle sauvegarde du jeu : carte mise à jour.": "New game save: map updated.",
     "La sauvegarde n'a pas changé.": "The save did not change.",
+    // version en ligne
+    "Ouvrir le fichier de sauvegarde": "Open the save file",
+    "Aucune sauvegarde ouverte": "No save opened",
+    "Ouvrez votre fichier de sauvegarde (.save) pour voir votre progression. Il se trouve dans C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames\\<chiffres>\\2010. Le fichier reste sur votre ordinateur : rien n'est envoyé.":
+      "Open your save file (.save) to see your progress. It is in C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames\\<numbers>\\2010. The file stays on your computer: nothing is sent.",
+    "Application Windows gratuite : la carte se met à jour pendant que vous jouez — télécharger":
+      "Free Windows app: the map updates while you play — download",
+    "ce fichier n'est pas une sauvegarde de Far Cry Primal": "this file is not a Far Cry Primal save",
   };
   /** Texte de l'interface dans la langue choisie ; {0}, {1}… reçoivent `args`. */
   function t(fr, ...args) {
@@ -145,6 +154,9 @@
   let mapFocusBounds = null;
   let searchTimer = null;
   let toastTimer = null;
+  let WEB = false; // version en ligne : pas de serveur, la sauvegarde est lue dans le navigateur (savefile.js)
+  let webFog = null; // grille du brouillard de la sauvegarde ouverte (version en ligne)
+  const APP_URL = "https://github.com/programgames/far-cry-primal-map/releases/latest";
 
   // ---------------------------------------------------------------- helpers
   const norm = (value) =>
@@ -222,11 +234,15 @@
     renderFilters();
     renderTabs();
     renderList();
+    $("#btn-fit").addEventListener("click", fitMap);
+
+    // Sans serveur local (page publiée sur GitHub Pages) : le visiteur ouvre lui-même sa sauvegarde.
+    WEB = !(await fetch("api/health", { cache: "no-store" }).then((r) => r.ok, () => false));
+    if (WEB) return startWeb();
 
     await refreshProgress();
     setInterval(refreshProgress, POLL_MS);
 
-    $("#btn-fit").addEventListener("click", fitMap);
     $("#btn-refresh").addEventListener("click", () => refreshProgress(true));
     $("#btn-pick").addEventListener("click", pickSaveFolder);
     $("#btn-pick-big").addEventListener("click", pickSaveFolder);
@@ -890,9 +906,14 @@
     }
     let bits;
     try {
-      const res = await fetch("api/fog", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      bits = new Uint8Array(await res.arrayBuffer());
+      if (WEB) {
+        if (!webFog) return; // pas encore de sauvegarde ouverte
+        bits = webFog;
+      } else {
+        const res = await fetch("api/fog", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        bits = new Uint8Array(await res.arrayBuffer());
+      }
     } catch (err) {
       toast(t("Brouillard illisible : {0}", err.message), "error");
       return;
@@ -988,6 +1009,10 @@
       );
       return;
     }
+    applyProgress(data, manual);
+  }
+
+  function applyProgress(data, manual = false) {
     setSaveStatus(
       data.readError ? "offline" : "saved",
       data.readError ? t("Lecture impossible ({0}) : état précédent affiché", data.readError) : t("Sauvegarde du {0}", timeLabel(data.savedAt))
@@ -1012,5 +1037,43 @@
     renderMissions();
     renderCrafting();
     updateFog();
+  }
+
+  // ---------------------------------------------------------------- version en ligne
+  /** Pas de serveur : le bouton 📁 ouvre un fichier .save, lu ici sans rien envoyer. */
+  function startWeb() {
+    const input = Object.assign(document.createElement("input"), { type: "file", accept: ".save", hidden: true, id: "save-file" });
+    document.body.append(input);
+    input.addEventListener("change", () => input.files[0] && openSaveFile(input.files[0]));
+    $("#btn-refresh").classList.add("hidden");
+    $("#btn-pick").title = t("Ouvrir le fichier de sauvegarde");
+    $("#btn-pick").setAttribute("aria-label", t("Ouvrir le fichier de sauvegarde"));
+    $("#btn-pick-big").textContent = t("Ouvrir le fichier de sauvegarde");
+    for (const button of [$("#btn-pick"), $("#btn-pick-big")]) button.addEventListener("click", () => input.click());
+    setSaveStatus("pending", t("Aucune sauvegarde ouverte"));
+    showSaveHelp(
+      t("Ouvrez votre fichier de sauvegarde (.save) pour voir votre progression. Il se trouve dans C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames\\<chiffres>\\2010. Le fichier reste sur votre ordinateur : rien n'est envoyé."),
+      false
+    );
+    const banner = $("#update-banner");
+    banner.href = APP_URL;
+    banner.textContent = t("Application Windows gratuite : la carte se met à jour pendant que vous jouez — télécharger");
+    banner.classList.remove("hidden");
+    updateCounts();
+  }
+
+  async function openSaveFile(file) {
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      // Même test que lib/locate.js : le nom de la carte du jeu suit l'en-tête.
+      if (!String.fromCharCode(...bytes.subarray(0, 0x300)).includes("primal_main"))
+        throw new Error(t("ce fichier n'est pas une sauvegarde de Far Cry Primal"));
+      const save = SaveFile.read(bytes);
+      webFog = SaveFile.fogBitmap(save);
+      applyProgress({ file: file.name, savedAt: new Date(file.lastModified).toISOString(), ...SaveFile.progress(save, index) });
+    } catch (err) {
+      setSaveStatus("error", t("Sauvegarde illisible"));
+      showSaveHelp(t("La carte ne peut pas lire la sauvegarde : {0}", err.message), false);
+    }
   }
 })();
