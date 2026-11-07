@@ -33,7 +33,8 @@ Full help: see the [wiki](../../wiki).
 - **Skills** tab: the 80 skills by skill tree, and the 55 crafting upgrades.
 - **Summary**: game progress (%) and play time, as the game reports them.
 
-The interface is in French for now; other languages are planned.
+The interface is in English and French. It follows the language of your browser; the **English** /
+**Français** button at the bottom of the side panel changes it.
 
 ## Your save file
 

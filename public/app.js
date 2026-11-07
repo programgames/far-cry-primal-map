@@ -26,6 +26,104 @@
     découvert: "Pas encore découvert",
   };
 
+  // ---------------------------------------------------------------- langue
+  // Le code est écrit en français ; EN donne l'anglais de chaque texte (clé = texte français, {0} = valeur).
+  // Langue : choix mémorisé (bouton du bas du panneau), sinon celle du navigateur (anglais si elle n'est pas le français).
+  const LANG_KEY = "oros.lang";
+  const LANG = (() => {
+    try {
+      const saved = localStorage.getItem(LANG_KEY);
+      if (saved === "fr" || saved === "en") return saved;
+    } catch {
+      /* stockage local indisponible */
+    }
+    return /^fr\b/i.test(navigator.language) ? "fr" : "en";
+  })();
+  const EN = {
+    // index.html
+    "Far Cry Primal — Carte d'Oros (locale)": "Far Cry Primal — Oros Map (local)",
+    "Carte d'Oros · progression de la partie": "Oros map · game progress",
+    "Replier le panneau": "Collapse the panel",
+    "Afficher le panneau": "Show the panel",
+    "Lecture de la sauvegarde du jeu…": "Reading the game save…",
+    "Relire la sauvegarde maintenant": "Read the save again now",
+    "Choisir le dossier des sauvegardes": "Choose the save folder",
+    "Recherche automatique": "Automatic search",
+    "Progression du jeu": "Game progress",
+    "Rechercher un lieu, une catégorie…": "Search a place, a category…",
+    Filtres: "Filters",
+    Lieux: "Places",
+    Missions: "Missions",
+    Compétences: "Skills",
+    "Recentrer la carte": "Recenter the map",
+    // états lus dans la sauvegarde (lib/save.js) et état visé
+    ramassé: "collected",
+    terminée: "completed",
+    débloqué: "unlocked",
+    découvert: "discovered",
+    "révélé sur la carte du jeu": "revealed on the game map",
+    "Pas encore ramassé": "Not collected yet",
+    "Pas encore terminée": "Not completed yet",
+    "Pas encore débloqué": "Not unlocked yet",
+    "Pas encore découvert": "Not discovered yet",
+    // app.js
+    "Données de la carte introuvables": "Map data not found",
+    "Le dossier <code>data</code> de l'application est incomplet. Téléchargez de nouveau l'application.":
+      "The <code>data</code> folder of the app is incomplete. Download the app again.",
+    "Zoom avant": "Zoom in",
+    "Zoom arrière": "Zoom out",
+    "Carte et données : <i>Far Cry Primal</i> © Ubisoft · projet de fans non officiel":
+      "Map and data: <i>Far Cry Primal</i> © Ubisoft · unofficial fan project",
+    "Masquer les éléments faits": "Hide done elements",
+    "Assombrir les zones inexplorées": "Darken unexplored areas",
+    "{0} / {1} éléments de la carte": "{0} / {1} map elements",
+    " · {0} de jeu": " · {0} played",
+    "Aucun lieu ne correspond.<br>Essayez un autre mot-clé ou réactivez des catégories.":
+      "No place matches.<br>Try another keyword or show more categories.",
+    Fait: "Done",
+    "… {0} autres lieux. Affinez la recherche.": "… {0} more places. Refine the search.",
+    Terminée: "Completed",
+    "Voir le donneur de la mission sur la carte": "Show the mission giver on the map",
+    "Voir {0} sur la carte": "Show {0} on the map",
+    "Aucune mission lue dans la sauvegarde.": "No mission read from the save.",
+    Obtenue: "Learned",
+    "Pas encore obtenue": "Not learned yet",
+    Atelier: "Crafting",
+    "{0} — niveau {1}": "{0} — level {1}",
+    Fabriqué: "Crafted",
+    "Pas encore fabriqué": "Not crafted yet",
+    "Aucune amélioration lue dans la sauvegarde.": "No crafting upgrade read from the save.",
+    "Donneur de la mission": "Mission giver",
+    "Repère d'information : le jeu n'enregistre pas d'état pour cet élément.":
+      "Information marker: the game does not record a state for this element.",
+    "Pas de description.": "No description.",
+    "Brouillard illisible : {0}": "Cannot read the fog of war: {0}",
+    "Choisissez le dossier dans la fenêtre Windows qui vient de s'ouvrir.":
+      "Choose the folder in the Windows dialog that just opened.",
+    "Aucune sauvegarde de Far Cry Primal dans « {0} ».": "No Far Cry Primal save in “{0}”.",
+    "Sauvegardes lues dans : {0}": "Saves read from: {0}",
+    "Choix du dossier impossible : {0}": "Cannot choose the folder: {0}",
+    "Recherche automatique des sauvegardes activée.": "Automatic search for saves is on.",
+    "Nouvelle version {0} disponible (vous avez la {1}) — télécharger":
+      "New version {0} available (you have {1}) — download",
+    "Sauvegarde introuvable": "Save not found",
+    "Sauvegarde illisible": "Cannot read the save",
+    "Aucune sauvegarde de Far Cry Primal trouvée. Lancez une partie une fois, ou choisissez le dossier des sauvegardes.":
+      "No Far Cry Primal save found. Play the game once, or choose the save folder.",
+    "La carte ne peut pas lire la sauvegarde : {0}": "The map cannot read the save: {0}",
+    "Lecture impossible ({0}) : état précédent affiché": "Cannot read the save ({0}): previous state shown",
+    "Sauvegarde du {0}": "Save of {0}",
+    "Nouvelle sauvegarde du jeu : carte mise à jour.": "New game save: map updated.",
+    "La sauvegarde n'a pas changé.": "The save did not change.",
+  };
+  /** Texte de l'interface dans la langue choisie ; {0}, {1}… reçoivent `args`. */
+  function t(fr, ...args) {
+    if (LANG !== "fr" && !(fr in EN)) console.warn("Texte sans traduction :", fr);
+    return (LANG === "fr" ? fr : EN[fr] || fr).replace(/\{(\d)\}/g, (_, i) => args[i]);
+  }
+  /** Texte d'un élément de data/oros.json dans la langue choisie (champ « en » écrit par build_data.py). */
+  const txt = (o, key) => (o[LANG] && o[LANG][key]) || o[key] || "";
+
   // ---------------------------------------------------------------- données
   let categories = [];
   let sprite = null;
@@ -65,7 +163,7 @@
   }
 
   const timeLabel = (iso) =>
-    new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    new Date(iso).toLocaleString(LANG, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
   function durationLabel(seconds) {
     const m = Math.round((seconds || 0) / 60);
@@ -104,6 +202,7 @@
   document.addEventListener("DOMContentLoaded", boot);
 
   async function boot() {
+    translatePage();
     bindChrome();
 
     try {
@@ -112,8 +211,8 @@
       mergeData(data, icons);
     } catch (err) {
       document.body.innerHTML = `<div style="padding:40px;font-family:sans-serif;color:#eee;background:#141010;height:100vh">
-        <h1>Données de la carte introuvables</h1>
-        <p>Le dossier <code>data</code> de l'application est incomplet. Téléchargez de nouveau l'application.</p>
+        <h1>${t("Données de la carte introuvables")}</h1>
+        <p>${t("Le dossier <code>data</code> de l'application est incomplet. Téléchargez de nouveau l'application.")}</p>
         <p style="color:#c99">${escapeHtml(err.message)}</p></div>`;
       return;
     }
@@ -137,19 +236,20 @@
 
   /** Données du jeu (oros.json) et icônes du jeu (icons.json). Coordonnées : mètres du jeu (lat = y, lng = x). */
   function mergeData(data, icons) {
-    groups = data.groups;
+    groups = data.groups.map((g) => ({ ...g, title: txt(g, "title") }));
     const groupById = new Map(groups.map((g) => [g.id, g]));
     sprite = icons.sprite;
     iconRects = icons.icons;
-    categories = data.categories.map((c) => ({ ...c, group_id: c.group, sprite: iconRects[c.icon] || null }));
+    categories = data.categories.map((c) => ({ ...c, title: txt(c, "title"), group_id: c.group, sprite: iconRects[c.icon] || null }));
     catById = new Map(categories.map((c) => [c.id, c]));
     locations = data.locations.map((l) => {
       const cat = catById.get(l.cat);
       return {
         ...l,
+        title: txt(l, "title"),
         latitude: l.y,
         longitude: l.x,
-        description: l.desc || "",
+        description: txt(l, "desc"),
         category_id: l.cat,
         category_title: cat.title,
         group_id: cat.group,
@@ -159,6 +259,36 @@
   }
 
   // ---------------------------------------------------------------- interface
+  /** Textes fixes de index.html (traduits une fois) et bouton de langue (le changement recharge la page). */
+  function translatePage() {
+    document.documentElement.lang = LANG;
+    if (LANG !== "fr") {
+      document.title = t(document.title);
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = node.nodeValue.trim();
+        if (text in EN) node.nodeValue = node.nodeValue.replace(text, EN[text]);
+      }
+      for (const el of $$("[title], [aria-label], [placeholder]")) {
+        for (const attr of ["title", "aria-label", "placeholder"]) {
+          if (el.hasAttribute(attr)) el.setAttribute(attr, t(el.getAttribute(attr)));
+        }
+      }
+    }
+    const other = LANG === "fr" ? "en" : "fr";
+    const button = $("#btn-lang");
+    button.textContent = other === "en" ? "English" : "Français";
+    button.lang = other;
+    button.addEventListener("click", () => {
+      try {
+        localStorage.setItem(LANG_KEY, other);
+      } catch {
+        /* stockage local indisponible : la page garde la langue du navigateur */
+      }
+      location.reload();
+    });
+  }
+
   function bindChrome() {
     $("#btn-collapse").addEventListener("click", () => {
       if (isMobile()) {
@@ -295,7 +425,7 @@
       attributionControl: true,
     });
 
-    L.control.zoom({ position: "bottomright", zoomInTitle: "Zoom avant", zoomOutTitle: "Zoom arrière" }).addTo(map);
+    L.control.zoom({ position: "bottomright", zoomInTitle: t("Zoom avant"), zoomOutTitle: t("Zoom arrière") }).addTo(map);
 
     L.tileLayer("tiles/{z}/{x}/{y}.jpg", {
       tileSize: 320,
@@ -307,7 +437,7 @@
       errorTileUrl: BLANK_TILE,
       keepBuffer: 4,
       updateWhenIdle: false,
-      attribution: "Carte et données : <i>Far Cry Primal</i> © Ubisoft · projet de fans non officiel",
+      attribution: t("Carte et données : <i>Far Cry Primal</i> © Ubisoft · projet de fans non officiel"),
     }).addTo(map);
 
     map.setMaxBounds(bounds);
@@ -389,16 +519,18 @@
     panel.innerHTML = `
       <label class="group-row hide-done">
         <input type="checkbox" data-hide-done ${ui.hideDone ? "checked" : ""} />
-        <span class="group-title">Masquer les éléments faits</span>
+        <span class="group-title">${t("Masquer les éléments faits")}</span>
       </label>
       <label class="group-row hide-done">
         <input type="checkbox" data-show-fog ${ui.showFog ? "checked" : ""} />
-        <span class="group-title">Assombrir les zones inexplorées</span>
+        <span class="group-title">${t("Assombrir les zones inexplorées")}</span>
       </label>`;
 
     for (const group of groups) {
       const cats = categories.filter((c) => c.group_id === group.id);
       if (!cats.length) continue;
+      // Animaux : ordre alphabétique dans la langue affichée (les autres groupes gardent l'ordre de l'index).
+      if (group.id === HUNTING_GROUP) cats.sort((a, b) => a.title.localeCompare(b.title, LANG));
 
       const wrap = document.createElement("div");
       wrap.className = "group";
@@ -523,11 +655,11 @@
   /** Un seul pourcentage : celui du jeu. Les éléments de la carte sont un compte, pas un second pourcentage. */
   function renderSummary() {
     const pct = Number(progress.progression) || 0;
-    $("#progress-pct").textContent = `${pct.toFixed(1).replace(".", ",")} %`;
+    $("#progress-pct").textContent = new Intl.NumberFormat(LANG, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(pct / 100);
     $("#progress-bar").style.width = `${Math.min(pct, 100)}%`;
     $("#game-summary").textContent =
-      `${counts.done} / ${counts.tracked} éléments de la carte` +
-      (progress.playTime != null ? ` · ${durationLabel(progress.playTime)} de jeu` : "");
+      t("{0} / {1} éléments de la carte", counts.done, counts.tracked) +
+      (progress.playTime != null ? t(" · {0} de jeu", durationLabel(progress.playTime)) : "");
   }
 
   // ---------------------------------------------------------------- liste
@@ -551,10 +683,10 @@
   function stateText(loc) {
     if (!isTracked(loc)) return "";
     const s = stateOf(loc);
-    if (isDone(loc)) return s[0].toUpperCase() + s.slice(1);
+    if (isDone(loc)) return t(s)[0].toUpperCase() + t(s).slice(1);
     // Pas fait : l'état visé d'abord, puis l'état actuel s'il existe.
     const now = s === "révélé" ? "révélé sur la carte du jeu" : s;
-    return PENDING[goalOf(loc)] + (now ? ` · ${now}` : "");
+    return t(PENDING[goalOf(loc)]) + (now ? ` · ${t(now)}` : "");
   }
 
   function renderList() {
@@ -565,7 +697,7 @@
     $("#list-count").textContent = results.length ? String(results.length) : "";
 
     if (!results.length) {
-      panel.innerHTML = `<div class="list-empty">Aucun lieu ne correspond.<br>Essayez un autre mot-clé ou réactivez des catégories.</div>`;
+      panel.innerHTML = `<div class="list-empty">${t("Aucun lieu ne correspond.<br>Essayez un autre mot-clé ou réactivez des catégories.")}</div>`;
       return;
     }
 
@@ -582,7 +714,7 @@
           <span class="row-title">${escapeHtml(loc.title)}</span>
           <span class="row-sub">${escapeHtml(loc.category_title)}${isTracked(loc) ? ` · ${escapeHtml(stateText(loc))}` : ""}</span>
         </span>
-        ${isDone(loc) ? '<span class="row-check" aria-label="Fait">✓</span>' : ""}`;
+        ${isDone(loc) ? `<span class="row-check" aria-label="${t("Fait")}">✓</span>` : ""}`;
       row.addEventListener("click", () => focusLocation(loc));
       row.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -598,7 +730,7 @@
     if (results.length > shown.length) {
       const more = document.createElement("div");
       more.className = "list-empty";
-      more.textContent = `… ${results.length - shown.length} autres lieux. Affinez la recherche.`;
+      more.textContent = t("… {0} autres lieux. Affinez la recherche.", results.length - shown.length);
       panel.appendChild(more);
     }
   }
@@ -609,19 +741,20 @@
     $("#missions-count").textContent = list.length ? `${list.filter((m) => m.done).length}/${list.length}` : "";
     // Groupes dans l'ordre de l'index (lignes d'histoire du jeu), missions dans l'ordre du jeu.
     let html = "";
-    for (const group of [...new Set(list.map((m) => m.group))]) {
-      const items = list.filter((m) => m.group === group);
+    for (const group of [...new Set(list.map((m) => txt(m, "group")))]) {
+      const items = list.filter((m) => txt(m, "group") === group);
       html += `<div class="mission-family">${escapeHtml(group)} <span>${items.filter((m) => m.done).length}/${items.length}</span></div>`;
       for (const m of items) {
         const i = list.indexOf(m);
+        const title = escapeHtml(txt(m, "title"));
         html += `<div class="row mission${m.done ? " found" : ""}">
-          <span class="row-main"><span class="row-title">${escapeHtml(m.title)}</span>
-          <span class="row-sub">${m.done ? "Terminée" : "Pas encore terminée"}</span></span>
-          ${m.x != null ? `<button type="button" class="mission-locate" data-mission="${i}" title="Voir le donneur de la mission sur la carte" aria-label="Voir ${escapeHtml(m.title)} sur la carte">⌖</button>` : ""}
-          ${m.done ? '<span class="row-check" aria-label="Terminée">✓</span>' : ""}</div>`;
+          <span class="row-main"><span class="row-title">${title}</span>
+          <span class="row-sub">${m.done ? t("Terminée") : t("Pas encore terminée")}</span></span>
+          ${m.x != null ? `<button type="button" class="mission-locate" data-mission="${i}" title="${t("Voir le donneur de la mission sur la carte")}" aria-label="${t("Voir {0} sur la carte", title)}">⌖</button>` : ""}
+          ${m.done ? `<span class="row-check" aria-label="${t("Terminée")}">✓</span>` : ""}</div>`;
       }
     }
-    panel.innerHTML = html || '<div class="list-empty">Aucune mission lue dans la sauvegarde.</div>';
+    panel.innerHTML = html || `<div class="list-empty">${t("Aucune mission lue dans la sauvegarde.")}</div>`;
   }
 
   /** Onglet Compétences : arbres de compétences (un par personnage), puis améliorations de l'atelier. */
@@ -631,29 +764,29 @@
     let html = "";
     const section = (title, items) =>
       `<div class="tab-section">${title} <span>${items.filter((i) => i.done).length}/${items.length}</span></div>`;
-    if (skills.length) html += section("Compétences", skills);
-    for (const tree of [...new Set(skills.map((s) => s.tree))]) {
-      const items = skills.filter((s) => s.tree === tree);
+    if (skills.length) html += section(t("Compétences"), skills);
+    for (const tree of [...new Set(skills.map((s) => txt(s, "tree")))]) {
+      const items = skills.filter((s) => txt(s, "tree") === tree);
       html += `<div class="mission-family">${escapeHtml(tree)} <span>${items.filter((s) => s.done).length}/${items.length}</span></div>`;
       for (const s of items) {
         html += `<div class="row mission${s.done ? " found" : ""}">
-          <span class="row-main"><span class="row-title">${escapeHtml(s.title)}</span>
-          <span class="row-sub">${s.done ? "Obtenue" : "Pas encore obtenue"}</span></span>
-          ${s.done ? '<span class="row-check" aria-label="Obtenue">✓</span>' : ""}</div>`;
+          <span class="row-main"><span class="row-title">${escapeHtml(txt(s, "title"))}</span>
+          <span class="row-sub">${s.done ? t("Obtenue") : t("Pas encore obtenue")}</span></span>
+          ${s.done ? `<span class="row-check" aria-label="${t("Obtenue")}">✓</span>` : ""}</div>`;
       }
     }
-    if (list.length) html += section("Atelier", list);
-    for (const group of [...new Set(list.map((c) => c.group))]) {
-      const items = list.filter((c) => c.group === group);
+    if (list.length) html += section(t("Atelier"), list);
+    for (const group of [...new Set(list.map((c) => txt(c, "group")))]) {
+      const items = list.filter((c) => txt(c, "group") === group);
       html += `<div class="mission-family">${escapeHtml(group)} <span>${items.filter((c) => c.done).length}/${items.length}</span></div>`;
       for (const c of items) {
         html += `<div class="row mission${c.done ? " found" : ""}">
-          <span class="row-main"><span class="row-title">${escapeHtml(group)} — niveau ${c.level}</span>
-          <span class="row-sub">${c.done ? "Fabriqué" : "Pas encore fabriqué"}</span></span>
-          ${c.done ? '<span class="row-check" aria-label="Fabriqué">✓</span>' : ""}</div>`;
+          <span class="row-main"><span class="row-title">${escapeHtml(t("{0} — niveau {1}", group, c.level))}</span>
+          <span class="row-sub">${c.done ? t("Fabriqué") : t("Pas encore fabriqué")}</span></span>
+          ${c.done ? `<span class="row-check" aria-label="${t("Fabriqué")}">✓</span>` : ""}</div>`;
       }
     }
-    $("#panel-crafting").innerHTML = html || '<div class="list-empty">Aucune amélioration lue dans la sauvegarde.</div>';
+    $("#panel-crafting").innerHTML = html || `<div class="list-empty">${t("Aucune amélioration lue dans la sauvegarde.")}</div>`;
   }
 
   let missionPin = null;
@@ -665,7 +798,7 @@
       keyboard: false,
     })
       .addTo(map)
-      .bindPopup(`<div class="popup"><h3>${escapeHtml(m.title)}</h3><span class="popup-cat">Donneur de la mission</span></div>`, POPUP_OPTIONS);
+      .bindPopup(`<div class="popup"><h3>${escapeHtml(txt(m, "title"))}</h3><span class="popup-cat">${t("Donneur de la mission")}</span></div>`, POPUP_OPTIONS);
     if (isMobile()) $(".app").classList.remove("sidebar-open");
     map.setView([m.y, m.x], Math.max(map.getZoom(), DETAIL_ZOOM));
     missionPin.openPopup();
@@ -727,7 +860,7 @@
     wrap.dataset.id = String(loc.id);
     const state = isTracked(loc)
       ? `<div class="popup-state${isDone(loc) ? " is-done" : ""}">${isDone(loc) ? "✓ " : ""}${escapeHtml(stateText(loc))}</div>`
-      : '<div class="popup-state is-info">Repère d\'information : le jeu n\'enregistre pas d\'état pour cet élément.</div>';
+      : `<div class="popup-state is-info">${t("Repère d'information : le jeu n'enregistre pas d'état pour cet élément.")}</div>`;
     wrap.innerHTML = `
       <div class="popup-head">
         <span class="cat-icon" style="${iconStyle(spriteOf(loc), 26)}"></span>
@@ -737,7 +870,7 @@
         </div>
       </div>
       ${state}
-      <div class="popup-desc">${mdToHtml(loc.description) || '<p class="muted">Pas de description.</p>'}</div>`;
+      <div class="popup-desc">${mdToHtml(loc.description) || `<p class="muted">${t("Pas de description.")}</p>`}</div>`;
     return wrap;
   }
 
@@ -761,7 +894,7 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       bits = new Uint8Array(await res.arrayBuffer());
     } catch (err) {
-      toast(`Brouillard illisible : ${err.message}`, "error");
+      toast(t("Brouillard illisible : {0}", err.message), "error");
       return;
     }
     const SIZE = 1024;
@@ -800,20 +933,20 @@
 
   /** Boîte « Choisir un dossier » de Windows (ouverte par le serveur), puis relecture de la sauvegarde. */
   async function pickSaveFolder() {
-    toast("Choisissez le dossier dans la fenêtre Windows qui vient de s'ouvrir.");
+    toast(t("Choisissez le dossier dans la fenêtre Windows qui vient de s'ouvrir."));
     try {
-      const res = await fetch("api/save-location/pick", { method: "POST" });
+      const res = await fetch(`api/save-location/pick?lang=${LANG}`, { method: "POST" });
       const out = await res.json();
       if (out.cancelled) return;
       if (!out.ok) {
-        showSaveHelp(out.error || "Dossier refusé.", true);
+        showSaveHelp(t("Aucune sauvegarde de Far Cry Primal dans « {0} ».", out.picked), true);
         return;
       }
       progress = { status: {}, missions: [] }; // force le redessin complet
       await refreshProgress();
-      toast(`Sauvegardes lues dans : ${out.dir}`);
+      toast(t("Sauvegardes lues dans : {0}", out.dir));
     } catch (err) {
-      toast(`Choix du dossier impossible : ${err.message}`, "error");
+      toast(t("Choix du dossier impossible : {0}", err.message), "error");
     }
   }
 
@@ -821,7 +954,7 @@
     await fetch("api/save-location/auto", { method: "POST" });
     progress = { status: {}, missions: [] };
     await refreshProgress();
-    toast("Recherche automatique des sauvegardes activée.");
+    toast(t("Recherche automatique des sauvegardes activée."));
   }
 
   /** Avis de mise à jour : une seule vérification au démarrage (le serveur garde la réponse 6 h). */
@@ -831,7 +964,7 @@
       if (!info.available) return;
       const banner = $("#update-banner");
       banner.href = info.url;
-      banner.textContent = `Nouvelle version ${info.latest} disponible (vous avez la ${info.current}) — télécharger`;
+      banner.textContent = t("Nouvelle version {0} disponible (vous avez la {1}) — télécharger", info.latest, info.current);
       banner.classList.remove("hidden");
     } catch {
       /* pas d'avis */
@@ -846,18 +979,26 @@
       if (!res.ok) throw Object.assign(new Error(data.error || `HTTP ${res.status}`), { code: data.code });
     } catch (err) {
       const missing = err.code === "no-save";
-      setSaveStatus("error", missing ? "Sauvegarde introuvable" : "Sauvegarde illisible");
-      showSaveHelp(missing ? err.message : `La carte ne peut pas lire la sauvegarde : ${err.message}`, false);
+      setSaveStatus("error", missing ? t("Sauvegarde introuvable") : t("Sauvegarde illisible"));
+      showSaveHelp(
+        missing
+          ? t("Aucune sauvegarde de Far Cry Primal trouvée. Lancez une partie une fois, ou choisissez le dossier des sauvegardes.")
+          : t("La carte ne peut pas lire la sauvegarde : {0}", err.message),
+        false
+      );
       return;
     }
-    setSaveStatus(data.warning ? "offline" : "saved", data.warning || `Sauvegarde du ${timeLabel(data.savedAt)}`);
+    setSaveStatus(
+      data.readError ? "offline" : "saved",
+      data.readError ? t("Lecture impossible ({0}) : état précédent affiché", data.readError) : t("Sauvegarde du {0}", timeLabel(data.savedAt))
+    );
     $("#save-line").title = data.file;
     $("#save-help").classList.add("hidden");
     $("#btn-auto").classList.toggle("hidden", data.saveMode !== "manual");
 
     const changed = data.savedAt !== progress.savedAt;
-    if (changed && progress.savedAt) toast("Nouvelle sauvegarde du jeu : carte mise à jour.");
-    else if (manual) toast("La sauvegarde n'a pas changé.");
+    if (changed && progress.savedAt) toast(t("Nouvelle sauvegarde du jeu : carte mise à jour."));
+    else if (manual) toast(t("La sauvegarde n'a pas changé."));
     if (!changed) return;
 
     progress = data;

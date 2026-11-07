@@ -10,9 +10,11 @@ Sources (dans fcp-extract) :
   work/ndb/mapobjectivetype   types et sous-types de marqueurs (bûcher, avant-poste, animaux…)
   work/ndb/craftingrecipe     recettes de l'atelier
   work/fcb/nomadobjecttemplates.fcb.converted.xml   compétences (nom interne -> texte)
-  work/strings.json           textes du jeu (français)
+  work/strings.json           textes du jeu (français et anglais)
   tools/filelists             chemins des scripts de mission (MissionId = CRC32 du chemin)
 Wiki FR : palette « FCP missions » (lignes d'histoire) et page « Compétences » (arbres).
+Wiki EN (dossier en/ à côté de fr/) : mêmes pages, pour les textes anglais.
+Textes anglais : champ « en » de chaque élément ({"title": …, "desc": …}), lu par public/app.js.
 """
 import json
 import math
@@ -27,6 +29,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 APP = Path(__file__).resolve().parents[2]
 SRC = Path(sys.argv[1] if len(sys.argv) > 1 else "E:/fcp-extract")
 WIKI = Path(sys.argv[2] if len(sys.argv) > 2 else "E:/fcp-wiki-fr") / "fr"
+WIKI_EN = WIKI.parent / "en"
 load = lambda p: json.load(open(p, encoding="utf-8"))
 WORLD = 5120  # demi-largeur du monde (m) : la carte du jeu fait 20 x 512 px à 1 m par pixel
 
@@ -34,7 +37,7 @@ strings = load(SRC / "work/strings.json")
 by_id = {s["id"]: s for s in strings}
 TAG = re.compile(r"<[^>]+>")
 clean = lambda t: TAG.sub("", t or "").replace("\xa0", " ").strip()
-text = lambda i: clean(by_id.get(int(i), {}).get("fr")) if i and str(i).lstrip("-").isdigit() and int(i) > 0 else ""
+text = lambda i, lang="fr": clean(by_id.get(int(i), {}).get(lang)) if i and str(i).lstrip("-").isdigit() and int(i) > 0 else ""
 norm = lambda t: re.sub(r"[^a-z0-9]+", " ", t.lower().translate(str.maketrans("àâäéèêëîïôöùûüçœ", "aaaeeeeiioouuuco"))).strip()
 report = []
 
@@ -61,10 +64,21 @@ def nice(t, en=""):
     return re.sub(r"\w+", fix, t.capitalize())
 
 
-def game_title(locid):
+def en_nice(t):
+    """Casse des titres anglais : Eagle Cry Peak, Cave of Bones, Primitive Heal II."""
+    t = clean(t)
+    if t.upper() != t:
+        return t
+    t = re.sub(r"[A-Za-z][A-Za-z']*", lambda m: m.group(0) if re.fullmatch("[IVX]+", m.group(0)) else m.group(0).capitalize(), t)
+    return re.sub(r"(?<=\s)(A|An|And|At|By|For|From|In|Into|Of|On|Or|The|To|With)\b", lambda m: m.group(0).lower(), t)
+
+
+def game_title(locid, lang="fr"):
     """Titre en casse normale d'un texte du jeu, par son identifiant."""
     s = by_id.get(int(locid), {}) if locid and str(locid).lstrip("-").isdigit() else {}
-    return nice(s.get("fr", ""), s.get("en", "")) if s.get("fr") else ""
+    if not s.get("fr"):
+        return ""
+    return nice(s["fr"], s.get("en", "")) if lang == "fr" else en_nice(s.get("en", ""))
 
 
 # ------------------------------------------------------------------ types de marqueurs
@@ -75,47 +89,48 @@ for g in re.finditer(r"<Generic ([^>]*)>(.*?)</Generic>", xml, re.S):
     TYPES[a["hidKey"]] = a["Name"]
     for s in re.finditer(r"<MapObjectiveSubType ([^>]*)/>", g.group(2)):
         b = dict(re.findall(r'(\w+)="([^"]*)"', s.group(1)))
-        SUBS[b["disSubTypeId"]] = (b["MarkerLabel"], game_title(b["locidNameLocalizationID"]))
+        locid = b["locidNameLocalizationID"]
+        SUBS[b["disSubTypeId"]] = (b["MarkerLabel"], game_title(locid), game_title(locid, "en"))
 markers = load(SRC / "work/markers.json")
 for m in markers:
     m["type"] = TYPES.get(m.get("mapobjtypeMapObjectiveType"), "")
-    m["sub"], m["subname"] = SUBS.get(m.get("MapObjectiveSubType"), ("", ""))
+    m["sub"], m["subname"], m["subname_en"] = SUBS.get(m.get("MapObjectiveSubType"), ("", "", ""))
     m["name"] = m.get("text_Name") or ""
 of = lambda *types: [m for m in markers if m["type"] in types]
 dist = lambda a, b: math.hypot(a["x"] - b["x"], a["y"] - b["y"])
 
 # ------------------------------------------------------------------ catégories
 GROUPS = [
-    {"id": "places", "title": "Lieux", "color": "#EB6B1F"},
-    {"id": "collectibles", "title": "Objets de collection", "color": "#20B4DA"},
-    {"id": "missions", "title": "Missions", "color": "#B15FD6"},
-    {"id": "hunting", "title": "Zones de chasse", "color": "#E0B341"},
+    {"id": "places", "title": "Lieux", "color": "#EB6B1F", "en": {"title": "Locations"}},
+    {"id": "collectibles", "title": "Objets de collection", "color": "#20B4DA", "en": {"title": "Collectibles"}},
+    {"id": "missions", "title": "Missions", "color": "#B15FD6", "en": {"title": "Missions"}},
+    {"id": "hunting", "title": "Zones de chasse", "color": "#E0B341", "en": {"title": "Hunting Areas"}},
 ]
-CATS = []  # id, groupe, titre, état visé (None = élément non suivi), icône
+CATS = []  # id, groupe, titre, état visé (None = élément non suivi), icône, titre anglais
 
 
-def cat(cid, group, title, goal, icon):
-    CATS.append({"id": cid, "group": group, "title": title, "goal": goal, "icon": icon})
+def cat(cid, group, title, goal, icon, title_en):
+    CATS.append({"id": cid, "group": group, "title": title, "goal": goal, "icon": icon, "en": {"title": title_en}})
 
 
-for args in [
-    ("bonfire", "places", "Bûcher", "débloqué", "bonfire"),
-    ("outpost", "places", "Avant-poste", "débloqué", "outpost"),
-    ("fort", "places", "Fort", "débloqué", "fort"),
-    ("village", "places", "Village", "débloqué", "village"),
-    ("cave", "places", "Grotte perdue", "découvert", "lostcave"),
-    ("campfire", "places", "Feu de camp", "découvert", "campfire"),
-    ("landmark", "places", "Lieu", "découvert", "landmark"),
-    ("lume", "collectibles", "Main daysha", "ramassé", "lume"),
-    ("relic", "collectibles", "Bracelet wenja", "ramassé", "relic"),
-    ("iziliamask", "collectibles", "Masque izila", "ramassé", "iziliamask"),
-    ("totem", "collectibles", "Esprit-totem wenja", "ramassé", "totem"),
-    ("cavepainting", "collectibles", "Peinture rupestre", "ramassé", "cavepainting"),
-    ("treasuremap", "collectibles", "Cache de chasseur", "ramassé", "treasuremap"),
-    ("helpwenja", "missions", "Aidez les Wenja", "terminée", "helpingwinja"),
-    ("tribalclash", "missions", "Choc tribal", "terminée", "tribewar"),
-    ("villagemission", "missions", "Mission de village", "terminée", "villagequest"),
-    ("beasthunt", "missions", "Chasse de Maître des Bêtes", "terminée", "hunting"),
+for args in [  # titres anglais : ceux des textes anglais du jeu
+    ("bonfire", "places", "Bûcher", "débloqué", "bonfire", "Bonfire"),
+    ("outpost", "places", "Avant-poste", "débloqué", "outpost", "Outpost"),
+    ("fort", "places", "Fort", "débloqué", "fort", "Fort"),
+    ("village", "places", "Village", "débloqué", "village", "Village"),
+    ("cave", "places", "Grotte perdue", "découvert", "lostcave", "Lost Cave"),
+    ("campfire", "places", "Feu de camp", "découvert", "campfire", "Campfire"),
+    ("landmark", "places", "Lieu", "découvert", "landmark", "Landmark"),
+    ("lume", "collectibles", "Main daysha", "ramassé", "lume", "Daysha Hand"),
+    ("relic", "collectibles", "Bracelet wenja", "ramassé", "relic", "Wenja Bracelet"),
+    ("iziliamask", "collectibles", "Masque izila", "ramassé", "iziliamask", "Izila Mask"),
+    ("totem", "collectibles", "Esprit-totem wenja", "ramassé", "totem", "Wenja Spirit Totem"),
+    ("cavepainting", "collectibles", "Peinture rupestre", "ramassé", "cavepainting", "Cave Painting"),
+    ("treasuremap", "collectibles", "Cache de chasseur", "ramassé", "treasuremap", "Hunter Cache"),
+    ("helpwenja", "missions", "Aidez les Wenja", "terminée", "helpingwinja", "Help Wenja"),
+    ("tribalclash", "missions", "Choc tribal", "terminée", "tribewar", "Tribal Clash"),
+    ("villagemission", "missions", "Mission de village", "terminée", "villagequest", "Village Mission"),
+    ("beasthunt", "missions", "Chasse de Maître des Bêtes", "terminée", "hunting", "Beast Master Hunt"),
 ]:
     cat(*args)
 ANIMAL_ICON = {"TibetanWolf": "wolf", "AsianTapir": "tapir", "Goat": "goat", "Bear": "brownbear",
@@ -124,22 +139,24 @@ ANIMAL_ICON = {"TibetanWolf": "wolf", "AsianTapir": "tapir", "Goat": "goat", "Be
                "mammothAnimal": "eldermammoth", "rhinoAnimal": "rhino", "woollyMammothAnimal": "mammoth",
                "cavelionAnimal": "cavelion", "europeanjaguarAnimal": "jaguar", "HoneyBadger": "badger",
                "SnowLeopard": "leopard", "Macaque": "monkey"}
-animal_names = {}
+animal_names = {}  # sous-type -> (titre, titre anglais)
 for m in of("Sigma/Animals"):
     if m["sub"] in ANIMAL_ICON:
-        animal_names[m["sub"]] = nice(m["subname"])
-for sub, name in sorted(animal_names.items(), key=lambda kv: kv[1]):
-    cat("animal_" + ANIMAL_ICON[sub], "hunting", name, None, ANIMAL_ICON[sub])
+        animal_names[m["sub"]] = (nice(m["subname"]), m["subname_en"])
+for sub, (name, name_en) in sorted(animal_names.items(), key=lambda kv: kv[1]):
+    cat("animal_" + ANIMAL_ICON[sub], "hunting", name, None, ANIMAL_ICON[sub], name_en)
 
 # ------------------------------------------------------------------ lieux
 locations = []
 
 
-def place(cid, m, title, desc="", icon=None, **track):
+def place(cid, m, title, desc="", icon=None, en=(), **track):
+    """en : (titre, description) en anglais."""
     loc = {"id": str(m.get("GameElementId") or m.get("EntityId")), "cat": cid, "title": title,
            "x": round(m["x"], 1), "y": round(m["y"], 1)}
     if desc:
         loc["desc"] = desc
+    loc["en"] = {k: v for k, v in zip(("title", "desc"), en) if v}
     if icon:
         loc["icon"] = icon
     if track:
@@ -148,19 +165,21 @@ def place(cid, m, title, desc="", icon=None, **track):
     return loc
 
 
-tip = lambda m: game_title(m.get("locidmapObjectiveToolTipId"))
-info = lambda m: text(m.get("locidMapObjectiveToolTipInfoId"))
+tip = lambda m, lang="fr": game_title(m.get("locidmapObjectiveToolTipId"), lang)
+info = lambda m, lang="fr": text(m.get("locidMapObjectiveToolTipInfoId"), lang)
 
 for m in of("FC3/RadioTower", "FC3/RadioTowerOverFOW"):
-    place("bonfire", m, tip(m) or "Bûcher", info(m), marker=[m["GameElementId"]])
+    place("bonfire", m, tip(m) or "Bûcher", info(m), en=(tip(m, "en") or "Bonfire", info(m, "en")),
+          marker=[m["GameElementId"]])
 for m in of("FC3/Safehouse"):
     if m["sub"] == "Outpost":
-        place("outpost", m, tip(m) or "Avant-poste", info(m), marker=[m["GameElementId"]])
+        place("outpost", m, tip(m) or "Avant-poste", info(m), en=(tip(m, "en") or "Outpost", info(m, "en")),
+              marker=[m["GameElementId"]])
     else:
         place("fort", m, tip(m) or nice(m["subname"]), info(m), icon="fort_udam" if "Udam" in m["sub"] else "fort_izila",
-              marker=[m["GameElementId"]])
+              en=(tip(m, "en") or m["subname_en"], info(m, "en")), marker=[m["GameElementId"]])
 village = next(m for m in of("Sigma/Tribe") if m["sub"] == "Village")
-place("village", village, "Votre village", marker=[m["GameElementId"] for m in of("Sigma/Tribe")])
+place("village", village, "Votre village", en=("Your Village",), marker=[m["GameElementId"] for m in of("Sigma/Tribe")])
 
 discovery = of("FC3/LocationDiscovery")
 # Grottes perdues : nom officiel (textes « Cave »). Lien marqueur d'entrée -> texte relevé dans une sauvegarde :
@@ -188,7 +207,8 @@ for i, e in enumerate(entrances):
     poi = cave_name.get(i)
     track = [e["GameElementId"]] + ([poi["GameElementId"]] if poi else [])
     name = game_title(CAVE_NAMES.get(e["GameElementId"])) or (poi["subname"] if poi else "Grotte perdue")
-    place("cave", e, name, marker=track)
+    name_en = game_title(CAVE_NAMES.get(e["GameElementId"]), "en") or (poi["subname_en"] if poi else "Lost Cave")
+    place("cave", e, name, en=(name_en,), marker=track)
 cave_poi_ids = {cave_pois[j]["GameElementId"] for j in used}
 report.append(f"grottes nommées : {len(cave_name)}/{len(entrances)}")
 primary = [l for l in locations]
@@ -197,7 +217,7 @@ for m in discovery:
     if m["GameElementId"] in cave_poi_ids:
         continue
     if m["sub"] == "FireCamp":
-        place("campfire", m, "Feu de camp", marker=[m["GameElementId"]])
+        place("campfire", m, "Feu de camp", en=("Campfire",), marker=[m["GameElementId"]])
         continue
     # Marqueur de découverte d'un bûcher, d'un avant-poste… (même nom, ou à moins de 150 m) :
     # il sert à l'état « découvert » de ce lieu au lieu de créer un doublon.
@@ -205,7 +225,7 @@ for m in discovery:
     if norm(host["title"]) == norm(m["subname"]) or dist(host, m) < 150:
         host["track"]["marker"].append(m["GameElementId"])
     elif m["subname"]:
-        place("landmark", m, m["subname"], marker=[m["GameElementId"]])
+        place("landmark", m, m["subname"], en=(m["subname_en"],), marker=[m["GameElementId"]])
 named_places = [l for l in locations if l["cat"] in ("bonfire", "outpost", "fort", "village", "cave", "landmark")]
 
 # ------------------------------------------------------------------ objets à collectionner
@@ -219,15 +239,19 @@ for icon in ("lume", "relic", "iziliamask", "totem", "cavepainting", "treasurema
     for c in clusters:
         p = c[0]
         host = min(named_places, key=lambda l: dist(l, p))
-        where = ""
+        where = where_en = ""
         if dist(host, p) < 600:
-            where = ("Dans : " if host["cat"] == "cave" and dist(host, p) < 400 else "Près de : ") + host["title"]
-        desc = where
+            inside = host["cat"] == "cave" and dist(host, p) < 400
+            where = ("Dans : " if inside else "Près de : ") + host["title"]
+            where_en = ("In: " if inside else "Near: ") + host["en"]["title"]
+        desc, desc_en = where, where_en
         if icon == "treasuremap":
             t = min(treasure_tips, key=lambda m: dist(m, p))
-            desc = "\n\n".join(x for x in (info(t) if dist(t, p) < 80 else "", where) if x)
-        title = next(c2["title"] for c2 in CATS if c2["id"] == icon)
-        place(icon, p, title, desc, pickup=[q["EntityId"] for q in c])
+            near = dist(t, p) < 80
+            desc = "\n\n".join(x for x in (info(t) if near else "", where) if x)
+            desc_en = "\n\n".join(x for x in (info(t, "en") if near else "", where_en) if x)
+        c2 = next(c2 for c2 in CATS if c2["id"] == icon)
+        place(icon, p, c2["title"], desc, en=(c2["en"]["title"], desc_en), pickup=[q["EntityId"] for q in c])
     report.append(f"{icon:14} {len(clusters)} objets")
 
 # ------------------------------------------------------------------ missions
@@ -242,11 +266,11 @@ by_enum = {}
 for s in strings:
     e = s.get("enum") or ""
     by_enum.setdefault(int(e, 16) if re.fullmatch(r"0x[0-9A-Fa-f]+", e) else zlib.crc32(e.encode()), s)
-titles = {}
+titles, titles_en = {}, {}
 for code in set(missions.values()):
     s = by_enum.get(zlib.crc32(code.upper().encode()))
     if s and s["section"] == "Description":
-        titles[code] = clean(s["fr"])
+        titles[code], titles_en[code] = clean(s["fr"]), clean(s["en"])
 
 SQ = re.compile(r"(sq[a-z]{2}_[a-z]\d[a-z]?)_")
 quests = defaultdict(list)
@@ -258,7 +282,7 @@ for code, ms in sorted(quests.items()):
     ms.sort(key=lambda m: ("overfow" in m["name"], "after" in m["name"]))  # le donneur d'origine d'abord
     m = ms[0]
     place("tribalclash" if code[:4] in ("sqbh", "sqsa") else "helpwenja", m, nice(m["subname"]), info(m),
-          mission=[code + "_main"])
+          en=(m["subname_en"], info(m, "en")), mission=[code + "_main"])
 villagers = defaultdict(list)
 for m in of("FC3/QuestGiver"):
     k = re.search(r"(vm_\d{3})_", m["name"])
@@ -266,32 +290,44 @@ for m in of("FC3/QuestGiver"):
         villagers[k.group(1)].append(m)
 for code, ms in sorted(villagers.items()):
     m = ms[0]
-    place("villagemission", m, nice(titles[code + "_main"]), info(m), mission=[code + "_main"])
+    place("villagemission", m, nice(titles[code + "_main"]), info(m),
+          en=(en_nice(titles_en[code + "_main"]), info(m, "en")), mission=[code + "_main"])
 HUNTS = {"cavebear": ("cavebear", "hunt_bear"), "sabretooth": ("sabertooth", "hunt_sabretooth"),
          "direwolf": ("wolfpack", "hunt_wolf"), "mammoth": ("mammoth", "hunt_mammoth")}
 for sub, (quest, icon) in HUNTS.items():
     ms = sorted((m for m in of("Sigma/EpicHunt") if m["sub"] == sub), key=lambda m: "questgiver" not in m["name"])
     if ms:
-        place("beasthunt", ms[0], nice(ms[0]["subname"]), icon=icon, hunt=[quest])
+        place("beasthunt", ms[0], nice(ms[0]["subname"]), icon=icon, en=(ms[0]["subname_en"],), hunt=[quest])
 
 for m in of("Sigma/Animals"):
     if m["sub"] in ANIMAL_ICON:
-        place("animal_" + ANIMAL_ICON[m["sub"]], m, animal_names[m["sub"]])
+        name, name_en = animal_names[m["sub"]]
+        place("animal_" + ANIMAL_ICON[m["sub"]], m, name, en=(name_en,))
 
 # ------------------------------------------------------------------ onglet Missions
 # Lignes d'histoire, ordre du jeu et titres en casse normale : palette « FCP missions » du wiki FR.
 bare = lambda t: re.sub(r"^(le|la|les|l) ", "", norm(t))
+bare_en = lambda t: re.sub(r"^(the|a|an) ", "", norm(t))
 by_bare = defaultdict(list)
 for c, t in sorted(titles.items()):
     by_bare[bare(t)].append(c)
-lines, header = [], None
-for line in mission_palette.splitlines():
-    if line.startswith("!"):
-        header = line.split("|")[-1].strip().lstrip("!").strip()
-    elif header and line.startswith("|") and "[[" in line:
-        for target, label in re.findall(r"\[\[([^|\]]+)(?:\|([^\]]+))?\]\]", line):
-            lines.append((header, label or target))
-        header = None
+
+
+def palette_lines(wiki_text):
+    """(ligne d'histoire, titre) de chaque mission d'une palette « FCP missions »."""
+    out, header = [], None
+    for line in wiki_text.splitlines():
+        if line.startswith("!"):
+            header = line.split("|")[-1].strip().lstrip("!").strip()
+        elif header and line.startswith("|") and "[[" in line:
+            for target, label in re.findall(r"\[\[([^|\]]+)(?:\|([^\]]+))?\]\]", line):
+                out.append((header, label or target))
+            header = None
+    return out
+
+
+lines = palette_lines(mission_palette)
+lines_en = palette_lines(open(WIKI_EN / "Template/FCP missions.wiki", encoding="utf-8").read())
 placed, mission_list = set(), []
 for group, title in lines:
     codes = [c for c in by_bare.get(bare(title), []) if c not in placed]
@@ -314,6 +350,24 @@ for m in mission_list:  # position : donneur de la mission (ou lieu de mission)
         m["x"], m["y"] = round(hits[0]["x"], 1), round(hits[0]["y"], 1)
 report.append(f"missions : {len(mission_list)} titrées, {len(placed)} placées par le wiki, {sum('x' in m for m in mission_list)} situées")
 
+# Textes anglais : palette du wiki EN, retrouvée par le titre anglais du jeu. Mission absente de la palette :
+# ligne d'histoire anglaise la plus fréquente parmi les missions de la même ligne française.
+en_line = {}
+for g, t in lines_en:
+    en_line.setdefault(bare_en(t), (g, t))
+votes = defaultdict(Counter)
+for m in mission_list:
+    g, t = en_line.get(bare_en(titles_en[m["code"]]), ("", ""))
+    m["en"] = {"title": t or en_nice(titles_en[m["code"]]), "group": g}
+    if g:
+        votes[m["group"]][g] += 1
+FALLBACK_EN = {"Conclusion": "Conclusion", "Missions de grotte": "Cave Missions", "Introduction": "Intro"}
+for m in mission_list:
+    if not m["en"]["group"]:
+        v = votes[m["group"]].most_common(1)
+        m["en"]["group"] = v[0][0] if v else FALLBACK_EN.get(m["group"], "Other Missions")
+report.append(f"missions EN : {sum(sum(v.values()) for v in votes.values())} placées par le wiki EN")
+
 # ------------------------------------------------------------------ atelier
 recipes = []
 xml = open(SRC / "work/ndb/craftingrecipe.ndb.rml.converted.xml", encoding="utf-8").read()
@@ -323,9 +377,10 @@ for g in re.finditer(r"<Generic ([^>]*)>", xml):
     # ark 0 = niveau final fictif d'une chaîne ; « XX - Archived » = recettes retirées du jeu.
     if (a["cftrcptpeType"] == "5" and name and a["arkArchetype"] != "0" and not a["Name"].startswith("XX")
             and all(r["ark"] != a["arkArchetype"] for r in recipes)):
-        recipes.append({"ark": a["arkArchetype"], "group": nice(name), "level": int(a["iCurrentLevel"]) + 1, "sort": int(a["iSortId"])})
+        recipes.append({"ark": a["arkArchetype"], "group": nice(name), "level": int(a["iCurrentLevel"]) + 1, "sort": int(a["iSortId"]),
+                        "en": {"group": en_nice(text(a["locidItemNameId"], "en"))}})
 recipes.sort(key=lambda r: (r["sort"], r["group"], r["level"]))
-crafting = [{k: r[k] for k in ("ark", "group", "level")} for r in recipes]
+crafting = [{k: r[k] for k in ("ark", "group", "level", "en")} for r in recipes]
 report.append(f"atelier : {len(crafting)} améliorations")
 
 # ------------------------------------------------------------------ compétences
@@ -337,27 +392,48 @@ def fval(o, n):
     return next((v for k, v in f.attrib.items() if k.startswith("value-")), None) if f is not None else None
 
 
-skill_hash = {}
+skill_hash, skill_en = {}, {}  # nom -> hash ; hash -> nom anglais
 for ab in tpl.iter("object"):
     if ab.get("name") == "Ability" and (fval(ab, "text_name") or "").startswith("SP_"):
-        name = text(fval(ab.find("object[@name='Properties']"), "locidLocalizedSkillName") or 0)
+        locid = fval(ab.find("object[@name='Properties']"), "locidLocalizedSkillName") or 0
+        name = text(locid)
         if name:
-            skill_hash.setdefault(norm(name), zlib.crc32(fval(ab, "text_name").encode()))
-skills, tree_name, prev = [], None, ""
-for line in open(WIKI / "Compétences (Far Cry Primal).wiki", encoding="utf-8"):
-    m = re.match(r"==\s*\[\[([^\]]+)\]\]\s*-\s*(.+?)\s*==", line)
-    if m:
-        tree_name = f"{m.group(2)} ({m.group(1)})"
-    elif tree_name and line.startswith("|") and not line.startswith(("|-", "|}")) and prev.startswith("|-"):
-        title = line[1:].strip()
-        if norm(title) in skill_hash:
-            skills.append({"hash": str(skill_hash[norm(title)]), "title": title, "tree": tree_name})
-    prev = line
-report.append(f"compétences : {len(skills)}")
+            h = skill_hash.setdefault(norm(name), zlib.crc32(fval(ab, "text_name").encode()))
+            skill_en.setdefault(h, en_nice(text(locid, "en")))
+
+
+def skill_rows(path):
+    """(personnage, nom de l'arbre, compétence) de chaque ligne d'une page « Compétences » du wiki."""
+    rows, tree, prev = [], None, ""
+    for line in open(path, encoding="utf-8"):
+        m = re.match(r"==\s*\[\[([^\]]+)\]\]\s*-\s*(.+?)\s*==", line)
+        if m:
+            tree = m.groups()
+        elif tree and line.startswith("|") and not line.startswith(("|-", "|}")) and prev.startswith("|-"):
+            rows.append((*tree, line[1:].strip()))
+        prev = line
+    return rows
+
+
+# Page anglaise : même découpage par personnage ; ses titres donnent la casse des noms anglais.
+rows_en = skill_rows(WIKI_EN / "Skills (Far Cry Primal).wiki")
+tree_en = {who: f"{tree} ({who})" for who, tree, _ in rows_en}
+title_en = {norm(t): t for _, _, t in rows_en}
+skills = []
+for who, tree, title in skill_rows(WIKI / "Compétences (Far Cry Primal).wiki"):
+    if norm(title) in skill_hash:
+        h = skill_hash[norm(title)]
+        skills.append({"hash": str(h), "title": title, "tree": f"{tree} ({who})",
+                       "en": {"title": title_en.get(norm(skill_en[h]), skill_en[h]), "tree": tree_en[who]}})
+report.append(f"compétences : {len(skills)}, dont {sum(s['en']['title'] in title_en.values() for s in skills)} titres du wiki EN")
 
 # ------------------------------------------------------------------ écriture
 ids = Counter(l["id"] for l in locations)
 assert not [i for i, n in ids.items() if n > 1], "identifiants de lieux en double"
+lacks_en = lambda o, keys: any(o.get(k) and not o["en"].get(k) for k in keys)  # (« group » des catégories = identifiant)
+missing_en = ([o for o in GROUPS + CATS + locations + skills if lacks_en(o, ("title", "desc", "tree"))]
+              + [o for o in mission_list + crafting if lacks_en(o, ("title", "group"))])
+assert not missing_en, f"textes anglais absents : {missing_en[:5]}"
 data = {
     "version": 2,
     "world": {"min": -WORLD, "max": WORLD},

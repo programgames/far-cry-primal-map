@@ -23,6 +23,9 @@ const DATA_DIR = path.join(ROOT, "data");
 
 const BASE_PORT = Number(process.env.PORT) || 4173;
 const OPEN = process.argv.includes("--open") || process.env.OROS_OPEN === "1";
+// Messages de la fenêtre noire : en français si Windows est en français, sinon en anglais.
+const FR = Intl.DateTimeFormat().resolvedOptions().locale.startsWith("fr");
+const say = (fr, en) => (FR ? fr : en);
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -66,8 +69,8 @@ function currentProgress() {
     cached = { ...latest, payload, fog: save.fogBitmap(data) };
     return payload;
   } catch (err) {
-    // Le jeu peut être en train d'écrire le fichier : on garde la dernière lecture valide.
-    if (cached) return { ...cached.payload, warning: `Lecture impossible (${err.message}) : état précédent affiché` };
+    // Le jeu peut être en train d'écrire le fichier : on garde la dernière lecture valide (la page affiche readError).
+    if (cached) return { ...cached.payload, readError: err.message };
     throw err;
   }
 }
@@ -158,11 +161,15 @@ async function handleApi(req, res, url) {
 
   // Choix du dossier des sauvegardes : boîte de dialogue Windows, puis recherche des sauvegardes dessous.
   if (route === "/api/save-location/pick" && req.method === "POST") {
-    const picked = await locate.pickFolder("Choisissez le dossier des sauvegardes de Far Cry Primal (ou un dossier qui le contient).");
+    const picked = await locate.pickFolder(
+      url.searchParams.get("lang") === "fr"
+        ? "Choisissez le dossier des sauvegardes de Far Cry Primal (ou un dossier qui le contient)."
+        : "Choose the Far Cry Primal save folder (or a folder that contains it)."
+    );
     if (!picked) return sendJson(res, 200, { ok: false, cancelled: true });
     const dir = locate.chooseDir(picked);
     cached = null;
-    return sendJson(res, 200, dir ? { ok: true, dir } : { ok: false, error: `Aucune sauvegarde de Far Cry Primal dans « ${picked} ».` });
+    return sendJson(res, 200, dir ? { ok: true, dir } : { ok: false, picked }); // message : public/app.js
   }
 
   if (route === "/api/save-location/auto" && req.method === "POST") {
@@ -246,24 +253,25 @@ function listen(port, attemptsLeft = 10) {
   server.once("error", async (err) => {
     if (err.code === "EADDRINUSE" && attemptsLeft > 0) {
       if (await alreadyRunning(port)) {
-        console.log(`  La carte est déjà ouverte : http://localhost:${port}`);
+        console.log(say(`  La carte est déjà ouverte : http://localhost:${port}`, `  The map is already open: http://localhost:${port}`));
         openBrowser(port);
         setTimeout(() => process.exit(0), 1500);
         return;
       }
-      console.log(`Port ${port} occupé, essai sur ${port + 1}…`);
+      console.log(say(`Port ${port} occupé, essai sur ${port + 1}…`, `Port ${port} in use, trying ${port + 1}…`));
       listen(port + 1, attemptsLeft - 1);
     } else {
-      console.error("✗ Impossible de démarrer :", err.message);
+      console.error(say("✗ Impossible de démarrer :", "✗ Cannot start:"), err.message);
       process.exit(1);
     }
   });
   server.listen(port, "127.0.0.1", () => {
-    console.log(`\n  Carte Far Cry Primal — Oros  (version ${pkg.version})`);
+    const file = (save.latestSave() || {}).file || say("introuvable (choisissez le dossier dans la page)", "not found (choose the folder in the page)");
+    console.log(say(`\n  Carte Far Cry Primal — Oros  (version ${pkg.version})`, `\n  Far Cry Primal map — Oros  (version ${pkg.version})`));
     console.log(`  ➜  http://localhost:${port}`);
-    console.log(`  Sauvegarde du jeu : ${(save.latestSave() || { file: "introuvable (choisissez le dossier dans la page)" }).file}`);
-    console.log(`\n  Laissez cette fenêtre ouverte pendant que vous utilisez la carte.`);
-    console.log(`  Fermez-la pour arrêter la carte.\n`);
+    console.log(say(`  Sauvegarde du jeu : ${file}`, `  Game save: ${file}`));
+    console.log(say(`\n  Laissez cette fenêtre ouverte pendant que vous utilisez la carte.`, `\n  Leave this window open while you use the map.`));
+    console.log(say(`  Fermez-la pour arrêter la carte.\n`, `  Close it to stop the map.\n`));
     if (OPEN) openBrowser(port);
   });
 }

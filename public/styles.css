@@ -627,9 +627,16 @@ input[type="checkbox"]:indeterminate::after {
 /* ------------------------------------------------------------------ footer */
 
 .side-foot {
+  display: flex;
+  gap: 8px;
   padding: 8px 14px 12px;
   border-top: 1px solid var(--line-soft);
   background: rgba(0, 0, 0, 0.15);
+}
+
+#btn-lang {
+  flex: none;
+  padding: 6px 10px;
 }
 
 

@@ -9,7 +9,8 @@ class Launcher
 {
     static int Main()
     {
-        Console.Title = "Carte d'Oros - Far Cry Primal";
+        bool fr = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fr"; // sinon anglais
+        Console.Title = fr ? "Carte d'Oros - Far Cry Primal" : "Oros Map - Far Cry Primal";
         Console.OutputEncoding = Encoding.UTF8; // Node écrit en UTF-8 (accents)
         string root = AppDomain.CurrentDomain.BaseDirectory;
         string node = Path.Combine(root, "runtime", "node.exe");
@@ -17,10 +18,11 @@ class Launcher
         string server = Path.Combine(app, "server.js");
         if (!File.Exists(node) || !File.Exists(server))
         {
-            Console.WriteLine("Des fichiers de l'application sont introuvables.");
-            Console.WriteLine("Décompressez d'abord TOUT le fichier .zip dans un dossier, puis lancez OrosMap.exe depuis ce dossier.");
+            Console.WriteLine(fr ? "Des fichiers de l'application sont introuvables." : "Some files of the app are missing.");
+            Console.WriteLine(fr ? "Décompressez d'abord TOUT le fichier .zip dans un dossier, puis lancez OrosMap.exe depuis ce dossier."
+                                 : "First extract the WHOLE .zip file into a folder, then start OrosMap.exe from that folder.");
             Console.WriteLine();
-            Console.WriteLine("Appuyez sur une touche pour fermer.");
+            Console.WriteLine(fr ? "Appuyez sur une touche pour fermer." : "Press any key to close.");
             Console.ReadKey();
             return 1;
         }
@@ -35,7 +37,8 @@ class Launcher
             if (process.ExitCode != 0)
             {
                 Console.WriteLine();
-                Console.WriteLine("La carte s'est arrêtée avec une erreur. Appuyez sur une touche pour fermer.");
+                Console.WriteLine(fr ? "La carte s'est arrêtée avec une erreur. Appuyez sur une touche pour fermer."
+                                     : "The map stopped with an error. Press any key to close.");
                 Console.ReadKey();
             }
             return process.ExitCode;

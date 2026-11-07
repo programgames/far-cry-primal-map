@@ -1,6 +1,7 @@
 # Using the map
 
-The interface is in French for now; the French labels are given in *italics*.
+The interface is in English and French. It follows the language of your browser; the **English** /
+**Français** button at the bottom of the side panel changes it. The French labels are given in *italics*.
 
 ## Progress
 
