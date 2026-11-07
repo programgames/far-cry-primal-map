@@ -6,7 +6,7 @@
  *     OrosMap.exe        lanceur (tools/launcher/OrosMap.cs, compilé avec le csc.exe fourni avec Windows)
  *     runtime/node.exe   copie du Node.js qui exécute ce script (licence MIT, LICENSE à côté)
  *     app/               serveur, page, données et tuiles
- *     LISEZ-MOI.txt
+ *     LISEZ-MOI.txt, README.txt
  *
  * Usage : node tools/package.js
  */
@@ -59,6 +59,22 @@ fs.writeFileSync(
     "puis sur « Exécuter quand même ». L'application n'est pas signée, c'est un projet de fans gratuit.",
     "",
     "Aide (en anglais) : https://github.com/" + pkg.repository + "/wiki",
+    "",
+  ].join("\r\n"),
+);
+fs.writeFileSync(
+  path.join(OUT, "README.txt"),
+  [
+    `Oros Map - Far Cry Primal (version ${pkg.version})`,
+    "",
+    "1. Double-click OrosMap.exe.",
+    "2. The map opens in your web browser. Leave the black window open while you use it.",
+    "3. Close the black window to stop the map.",
+    "",
+    "If Windows shows \"Windows protected your PC\": click \"More info\", then \"Run anyway\".",
+    "The app is not signed: it is a free fan project.",
+    "",
+    "Help: https://github.com/" + pkg.repository + "/wiki",
     "",
   ].join("\r\n"),
 );
